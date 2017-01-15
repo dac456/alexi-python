@@ -3,6 +3,8 @@ import theano
 import theano.tensor as T
 import theano.tensor.nnet as nnet
 
+import pickle
+
 def layer(n_in, n_out):
     rng = np.random.RandomState()
     W = np.asarray(
@@ -68,7 +70,23 @@ def train_model(model, x, y, n_epochs=10000):
     for i in range(n_epochs):
         for j in range(len(x)):
             err = model(x[j], y[j])
-        if i % 10 == 0:
+        if i % 100 == 0:
             print('Error: %s' % (err,))
 
     #theano.printing.pydotprint(model, outfile="model.png", var_with_name_simple=True)
+
+def save_model(file, model, evaluate):
+    with open(file, 'wb+') as f:
+        pickle.dump(model, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(evaluate, f, pickle.HIGHEST_PROTOCOL)
+    f.close()
+
+
+def load_model(file):
+    with open(file, 'rb') as f:
+        fn = []
+        for i in range(2):
+            fn.append(pickle.load(f))
+    f.close()
+
+    return fn[0], fn[1]
