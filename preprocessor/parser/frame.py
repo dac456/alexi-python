@@ -1,19 +1,14 @@
-import os, re
+import os
 import configparser
 import numpy as np
+from .util import numerical_sort
 
-# http://stackoverflow.com/questions/12093940/reading-files-in-a-particular-order-in-python
-numbers = re.compile(r'(\d+)')
-def numerical_sort(value):
-    parts = numbers.split(value)
-    parts[1::2] = map(int, parts[1::2])
-    return parts
 
 def parse_frames(path):
-    out_array = np.array([]).reshape(0, 7)
+    out_array = np.array([]).reshape(0, 9)
 
     files = []
-    for (dirpath, dirnames, filenames) in os.walk(path + '/framedata'):
+    for (dirpath, dirnames, filenames) in os.walk(os.path.abspath(path) + '/framedata'):
         files.extend(filenames)
         break
 
@@ -28,6 +23,8 @@ def parse_frames(path):
             config_string = '[global]\n' + cfg_file.read()
 
         cfg.read_string(config_string)
+        warped = cfg.getboolean('global', 'warped')
+
         dx = cfg.getfloat('global', 'vdxr')
         dy = cfg.getfloat('global', 'vdyr')
         dtheta = cfg.getfloat('global', 'vdtheta')
@@ -36,6 +33,13 @@ def parse_frames(path):
         pitch = cfg.getfloat('global', 'vpitch')
         roll = cfg.getfloat('global', 'vroll')
 
-        out_array = np.append(out_array, [[dx,dy,dtheta,vleft,vright,pitch,roll]], axis=0)
+        vx = cfg.getint('global', 'vx')
+        vy = cfg.getint('global', 'vy')
+
+        # if warped:
+        #    print('debug: dx %f dy %f' % dx, dy)
+
+
+        out_array = np.append(out_array, [[dx,dy,dtheta,vleft,vright,pitch,roll,vx,vy]], axis=0)
 
     return out_array
